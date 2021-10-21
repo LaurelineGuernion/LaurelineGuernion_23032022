@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "root",
+    "password": "Dvi890oPOhYaa223bxHIJ6JeD550ByV",
+    "database": "groupomedia_development",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": "Dvi890oPOhYaa223bxHIJ6JeD550ByV",
+    "database": "groupomedia_test",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": "Dvi890oPOhYaa223bxHIJ6JeD550BV",
+    "database": "groupomedia_production",
+    "host": "localhost",
+    "dialect": "mysql"
+  }
+} 
