@@ -1,7 +1,6 @@
 const multer = require('multer');
 
 //////////////////// GESTION DES FICHIERS ////////////////////
-// Définir le format des images
 const MIME_TYPES = {
   'image/jpg': 'jpg',
   'image/jpeg': 'jpg',
@@ -15,9 +14,7 @@ const storage = multer.diskStorage({
   },
   // Quel nom de fichier utiliser ?
   filename: (req, file, callback) => {
-    // Générer le nom : éviter les espaces et les remplacer par des underscores
     const name = file.originalname.split(' ').join('_');
-    // Générer l'extension du fichier grace au MIME TYPES (dictionnaire)
     const extension = MIME_TYPES[file.mimetype];
     // Créer le nom du fichier
     callback(null, name + Date.now() + '.' + extension);
