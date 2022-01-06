@@ -3,7 +3,7 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Post extends Model {};
   Post.init({
-    idUSER: DataTypes.INTEGER,
+    UserId: DataTypes.INTEGER,
     contenu: DataTypes.STRING,
     image: DataTypes.STRING
   }, {
