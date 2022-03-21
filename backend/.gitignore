@@ -1,5 +1,3 @@
 node_modules
 backend/.DS_Store
-backend/migrations
-.vscode
-vetur.config.js
+migrations/
