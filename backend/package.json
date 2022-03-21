@@ -22,7 +22,7 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.3.0",
     "nodemon": "^2.0.15",
-    "sequelize": "^6.7.0",
+    "sequelize": "^6.16.1",
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
