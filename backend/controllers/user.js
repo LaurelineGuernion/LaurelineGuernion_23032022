@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
-const db = require('../models/index');
-const User = db.user;
+const db = require('../models');
+const User = db.User;
 const cryptoJs = require('crypto-js');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
@@ -83,7 +83,7 @@ exports.login = (req, res) => {
   const cryptedEmail = cryptoJs.HmacSHA256(email, process.env.EMAIL_KEY_CRYPTO).toString();
 
   if (!REGEX_EMAIL.test(email)) {
-    return res.status(400).json({ 'erreur':'Email invalide' });
+    return res.status(400).json({ 'erreur':'Email invalide ' });
   };
 
   if(!REGEX_PASSWORD.test(password)){
@@ -91,7 +91,7 @@ exports.login = (req, res) => {
   };
 
   if (!email || !password) {
-    return res.status(400).json({ error: 'Email ou mot de passe incorrect' });
+    return res.status(400).json({ error: 'Un ou des champs sont manquants' });
   };
 
   User.findOne({ where: {email: cryptedEmail }})
@@ -109,9 +109,12 @@ exports.login = (req, res) => {
           res.status(200).json({
             message: 'Connexion réussie',
             userId: user.id,
+            isAdmin: user.isAdmin,
+            prenom: user.prenom,
+            nom: user.nom,
+            email:user,email,
             token: jwt.sign(
-              { userId: user.id,
-              isAdmin: user.isAdmin },
+              { userId: user.id },
               process.env.TOKEN_SECRET,
               { expiresIn: '24h' }
             )
@@ -125,13 +128,17 @@ exports.login = (req, res) => {
 // Trouver un utilisateur
 exports.findUser = (req, res) => {
   User.findOne({ where: { id: req.params.id } })
+  
   .then((user) => res.status(200).json({
     message: ' Utilisateur trouvé ',
     userId: user.id,
     nom: user.nom,
     prenom: user.prenom,
     photo: user.photo,
-    bio: user.bio
+    bio: user.bio,
+    password: user.password,
+    email: user.email,
+    isAdmin: user.isAdmin
   }))
   .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })})
 };
@@ -143,11 +150,9 @@ exports.findAllUsers = (req, res) => {
   .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })})
 };
 
-// Mise à jour du compte utilisateur
+  // Mise à jour du compte utilisateur
 exports.updateInfo = (req, res) => {
   const id = req.params.id;
-  const email = req.body.email;
-  const cryptedEmail = cryptoJs.HmacSHA256(email, process.env.EMAIL_KEY_CRYPTO).toString();
 
   User.findOne({ where: {id: id }})
     .then(user => {
@@ -159,38 +164,15 @@ exports.updateInfo = (req, res) => {
   User.update(
     { nom : req.body.nom,
       prenom : req.body.prenom,
-      email: cryptedEmail,
       bio: req.body.bio
     },
     { where: { id: id }}
   )
-  .then(() => res.status(201).json({ message: 'Utilisateur modifié !',userId: id }))
+  .then(() => res.status(201).json({ message: 'Utilisateur modifié !', userId: id }))
   .catch((error) => { res.status(500).json({ message: " erreur 500 - " + error })})
   };
-  
-// Mise à jour du mot de passe utilisateur
-exports.updatePassword =  (req, res) => {
-  const id = req.params.id;
-  const password = req.body.password;
-  const hash =  bcrypt.hashSync(password, 10);
 
-  User.findOne({ where: { id: id }})
-  .then(user => {
-    if (!user) {
-      return res.status(401).json({ error: 'Id non valide !' });
-    }})
-  .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
-    
-  User.update(
-    { password: hash},
-    { where: { id: id }}
-  )
-  .then(() => res.status(201).json({ message: 'Mot de passe modifié !' }))
-  .catch((error) => { res.status(500).json({ message: " erreur 500 - " + error })})
-};
-
-
-// Enregistrer une image profil
+  // Enregistrer une image profil
 exports.savePhoto = (req, res) => {
   const id = req.params.id;
 
@@ -215,6 +197,52 @@ exports.savePhoto = (req, res) => {
   .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
 };
 
+// Mise à jour de l'email
+exports.updateEmail = (req, res) => {
+  const id = req.params.id;
+  const email = req.body.email;
+  const cryptedEmail = cryptoJs.HmacSHA256(email, process.env.EMAIL_KEY_CRYPTO).toString();
+
+  User.findOne({ where: {id: id }})
+    .then(user => {
+      if (!user) {
+        return res.status(401).json({ error: 'Id non valide !' });
+      }})
+    .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
+
+  User.update(
+    { email: cryptedEmail
+    },
+    { where: { id: id }}
+  )
+  .then(() => res.status(201).json({ message: 'Utilisateur modifié !', userId: id }))
+  .catch((error) => { res.status(500).json({ message: " erreur 500 - " + error })})
+  };
+
+// Mise à jour du mot de passe utilisateur
+exports.updatePassword =  (req, res) => {
+  const id = req.params.id;
+  const password = req.body.password;
+  const hash =  bcrypt.hashSync(password, 10);
+
+  if(!REGEX_PASSWORD.test(password)){
+    return res.status(400).json({ 'erreur':'Mot de passe invalide' })
+  };
+
+  User.findOne({ where: { id: id }})
+  .then(user => {
+    if (!user) {
+      return res.status(401).json({ error: 'Id non valide !' });
+    }})
+  .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
+    
+  User.update(
+    { password: hash},
+    { where: { id: id }}
+  )
+  .then(() => res.status(201).json({ message: 'Mot de passe modifié !', userId: id }))
+  .catch((error) => { res.status(500).json({ message: ' erreur 500 - ' + error })})
+};
 
 // Supprimer un compte utilisateur
 exports.delete = (req, res) => {
@@ -238,23 +266,6 @@ exports.delete = (req, res) => {
       User.destroy ({ where: { id: id }})
           .then(() => res.status(201).json({ message: 'Utilisateur supprimé !' }))
           .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
-    }
-  })
-  .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
-};
-
-// Suppression d'un compte utilisateur par l'administrateur - à tester en front-end
-exports.adminDeleteUser = (req, res) => {
-  const id = req.params.id;
-  
-  User.findAll()
-  .then(user => {
-    if (user.isAdmin) {
-      User.destroy ({ where: { id: id }})
-          .then(() => res.status(201).json({ message: 'Compte utilisateur supprimé par l\'administrateur !' }))
-          .catch((error) => { res.status(400).json({ message: " erreur 400 " + error })});
-    } else {
-      res.status(401).json({message : " Non autorisé " });
     }
   })
   .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})

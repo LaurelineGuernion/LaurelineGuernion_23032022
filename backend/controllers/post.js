@@ -1,7 +1,7 @@
-const db = require('../models/index');
+const db = require('../models');
 const fs = require('fs');
-const Post   = db.post;
-const User   = db.user;
+const Post   = db.Post;
+const User   = db.User;
 
 
 // Création d'un post
@@ -10,11 +10,7 @@ exports.createPost = (req, res) => {
     if (req.file) { 
         image = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
     };
-
-    if(req.body.contenu == null) {
-        return res.status(400).send({ message: 'Votre message est vide' });
-    };
-
+    
     const post = new Post(
         {
             UserId: req.body.UserId,
@@ -26,15 +22,14 @@ exports.createPost = (req, res) => {
         .catch((error) => { res.status(400).json({ message: 'erreur 400 - ' + error })})
 };
 
-
 // Afficher tous les posts
 exports.allPosts = (req, res) => {
     Post.findAll({
-        attributes: ['contenu', 'image'],
+        attributes: ['contenu', 'image', 'userId', 'id', 'createdAt'],
         order: [['createdAt', 'DESC']],
         include: [{
             model: User,
-            attributes: ['nom', 'prenom', 'photo']
+            attributes: ['nom', 'prenom', 'photo', 'id']
         }]
     })
     .then((posts) => res.status(200).json(posts))
@@ -45,11 +40,11 @@ exports.allPosts = (req, res) => {
 exports.userPosts = (req, res) => {
     Post.findOne({ 
         where: { id: req.params.id },
-        attributes: ['contenu', 'image'],
+        attributes: ['contenu', 'image', 'userId', 'createdAt'],
         order: [['createdAt', 'DESC']],
         include: [{
             model: User,
-            attributes: ['nom', 'prenom', 'photo']
+            attributes: ['nom', 'prenom', 'photo', 'id']
         }]
     })  
     .then((post) => res.status(200).json({post}))
@@ -68,7 +63,7 @@ exports.modifyPost = (req, res) => {
 
     if(messageObject.contenu === undefined || messageObject.contenu === null) {
         return res.status(400).json({ message: 'Votre message est vide' });
-    }
+    } 
 
     Post.update({
         ...messageObject, id: id},
@@ -96,20 +91,3 @@ exports.deletePost = (req, res) => {
       })
       .catch((error) => { res.status(500).json({ message: " erreur 500 - " + error })});
 };
-
-// Suppression d'un post par l'administrateur - à tester en front-end
-exports.adminDeletePost = (req, res) => {
-    const id = req.params.id;
-
-    User.findAll()
-    .then(user => {
-      if (user.isAdmin) {
-        Post.destroy ({ where: { id: id }})
-            .then(() => res.status(201).json({ message: 'Post supprimé par l\'administrateur !' }))
-            .catch((error) => { res.status(400).json({ message: " erreur 400 " + error })});
-      } else {
-        res.status(401).json({message : " Non autorisé " });
-      }
-    })
-    .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
-  };

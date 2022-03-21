@@ -1,6 +1,6 @@
-const db = require('../models/index');
-const Comment   = db.comment;
-const User   = db.user;
+const db = require('../models');
+const Comment   = db.Comment;
+const User   = db.User;
 
 // Création d'un commentaire
 exports.createComment = (req, res) => {
@@ -16,15 +16,16 @@ exports.createComment = (req, res) => {
         .catch((error) => { res.status(400).json({ message: ' erreur 400 - ' + error })})
 };
 
+
 // Afficher tous les commentaires d'un post
 exports.AllCommentsPost = (req, res) => {
     Comment.findAll({
         where: { PostId: req.params.id },
-        attributes: [ 'PostId','contenu'],
+        attributes: [ 'postId','contenu', 'id'],
         order: [['createdAt', 'DESC']],
         include: [{
             model: User,
-            attributes: ['nom', 'prenom', 'photo']
+            attributes: ['nom', 'prenom', 'photo', 'id']
         }]
     })
     .then((comments) => res.status(200).json({ comments }))
@@ -33,9 +34,10 @@ exports.AllCommentsPost = (req, res) => {
 
 // Afficher tous les commentaires de l'utiliseur sur son profil
 exports.CommentsProfil = (req, res) => {
+
     Comment.findAll({
         where: { UserId: req.params.id },
-        attributes: [ 'PostId','contenu'],
+        attributes: [ 'postId','contenu'],
         order: [['createdAt', 'DESC']],
         include: [{
             model: User,
@@ -46,11 +48,21 @@ exports.CommentsProfil = (req, res) => {
     .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })}) 
 };
 
+
 // Modification du commentaire
 exports.modifyComment = (req, res) => {
+    const id = req.params.id;
+
     if(req.body.contenu === undefined || req.body.contenu === '') {
         return res.status(400).json({ message: 'Votre message est vide' });
     }
+
+    Comment.findOne({ where: { id: id }})
+    .then(commentId => {
+      if (!commentId) {
+        return res.status(401).json({ error: 'Id non valide !' });
+      }})
+    .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
     
     Comment.update({ ...req.body }, { where: { id: req.params.id }})
     .then(() => res.status(200).json({ message: 'Commentaire modifié' }))
@@ -63,20 +75,3 @@ exports.deleteComment = (req, res) => {
     .then(() => res.status(200).json({ message: 'Commentaire supprimé' }))
     .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })})
 };
-
-// Suppression d'un commentaire par l'administrateur - à tester en front-end
-exports.adminDeleteComment = (req, res) => {
-    const id = req.params.id;
-
-    User.findAll()
-    .then(user => {
-      if (user.isAdmin) {
-        Comment.destroy ({ where: { id: id }})
-            .then(() => res.status(201).json({ message: 'Commentaire supprimé par l\'administrateur !' }))
-            .catch((error) => { res.status(400).json({ message: " erreur 400 " + error })});
-      } else {
-        res.status(401).json({message : " Non autorisé " });
-      }
-    })
-    .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
-  };
