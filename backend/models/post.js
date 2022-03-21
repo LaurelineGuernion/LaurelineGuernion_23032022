@@ -1,14 +1,26 @@
-const { Model } = require('sequelize');
-
+'use strict';
+const {
+  Model
+} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Post extends Model {};
+  class Post extends Model {
+
+    static associate(models) {
+      models.Post.belongsTo(models.User, {
+        foreignKey: {
+          allowNull: false
+        }
+      });
+      models.Post.hasMany(models.Comment);
+    }
+  };
+  
   Post.init({
-    UserId: DataTypes.INTEGER,
-    contenu: DataTypes.STRING,
+    contenu: DataTypes.TEXT,
     image: DataTypes.STRING
   }, {
     sequelize,
-    modelName: 'Post'
+    modelName: 'Post',
   });
   return Post;
 };

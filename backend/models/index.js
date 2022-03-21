@@ -34,29 +34,4 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-db.user = require("./user")(sequelize, Sequelize)
-db.post = require("./post")(sequelize, Sequelize)
-db.comment = require("./comment")(sequelize, Sequelize)
-
-db.user.hasMany(db.post);
-db.user.hasMany(db.comment);
-
-db.post.belongsTo(db.user, {
-  foreignKey: {
-    allowNull: false
-  }
-});
-db.post.hasMany(db.comment);
-
-db.comment.belongsTo(db.user, {
-  foreignKey: {
-    allowNull: false
-  }
-});
-db.comment.belongsTo(db.post, {
-  foreignKey: {
-    allowNull: false
-  }
-});
-
 module.exports = db;
