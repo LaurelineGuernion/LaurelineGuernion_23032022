@@ -153,6 +153,7 @@
           formData.append('image', this.post.image);
           formData.append('contenu', this.post.contenu);
           formData.append('UserId', localStorage.getItem('userId'));
+          
           AxiosAuth.post('http://localhost:3000/api/posts', formData, { headers: { 'Content-Type': 'multipart/form-data', 'Authorization':'Bearer ' + localStorage.getItem('token')}} )
           .then(() => notyf.success('Post envoyé !'))
           .catch (() => notyf.error('Erreur de la page, connectez-vous !'))

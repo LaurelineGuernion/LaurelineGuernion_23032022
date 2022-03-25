@@ -318,7 +318,6 @@
 
       showComments(idPost) {
         AxiosAuth.get('http://localhost:3000/api/comments/' + idPost, { headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')} })
-
         .then((response) => {
         this.comments = response.data.comments;
         })
