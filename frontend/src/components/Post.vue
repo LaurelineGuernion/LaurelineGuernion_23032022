@@ -1,15 +1,18 @@
 <template>
   <main  class="container-fluid form-custom-color-white pt-5">     
-    <section class="row flex-column" >
+    <section class="row mx-5 pb-4" >
+      <div v-if="posts.length === 0" class="alert alert-info" role="alert">
+       Soyez la première personne à écrire un post !
+      </div>
 
       <!-- LE FIL D'ACTUALITÉS DES POSTS -->
       <article
+      v-else
       v-for="(post, index) in posts"
       :key="post.id"
       class="card mx-auto col-md-7 col-lg-6 border-0 p-0 mb-4 shadow-lg">
-
         <div class="card-body">
-          <div class="d-flex justify-content-between">
+          <div class="d-flex justify-content-between"> 
 
             <router-link class="text-dark" :to="`/${post.User.id}`">
               <!-- Informations utilisateur -->
