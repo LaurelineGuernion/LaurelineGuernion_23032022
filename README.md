@@ -37,9 +37,9 @@ Puis connexion au serveur
 
 * Importer le fichier groupomania_developpement.sql du lien Github dans votre nouvelle base de données manuellement.
 * Manipulation dans le terminal :
-    Avant tout, créer dans MYSQL la base de données : `CREATE DATABASE nombasededonnees ;`
-    Faire `Exit` pour sortir de MYSQL.
-    Dans le terminal : `mysql - u utilisateur -p nombasededonnees < groupomania_developpement.sql ;`
+    - Avant tout, créer dans MYSQL la base de données : `CREATE DATABASE nombasededonnees ;`
+    - Faire `Exit` pour sortir de MYSQL.
+    - Dans le terminal : `mysql - u utilisateur -p nombasededonnees < groupomania_developpement.sql ;`
 
 * Remplir les champs du fichier .env.initial pour personnaliser vos accès.
 * Renommer ce même fichier en .env
