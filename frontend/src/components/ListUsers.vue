@@ -4,7 +4,7 @@
     <section
     v-for="user in users"
     :key="user.id"
-    class="row my-4">
+    class="row my-5">
       <!-- Image utilisateur-->
       <article class='card col col-lg-5 pt-3 m-auto'>
         <img

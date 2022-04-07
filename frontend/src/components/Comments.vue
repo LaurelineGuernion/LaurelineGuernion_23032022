@@ -7,7 +7,7 @@
       type="button"
       role="button"
       @click.prevent="showComments(postid)"
-      class="btn btn-outline-secondary me-2"
+      class="btn btn-outline-secondary me-2 mt-2"
       aria-label="Bouton commentaires"
       data-bs-toggle="collapse"
       :data-bs-target="`#afficheCommentaires${postid}`"
@@ -23,7 +23,7 @@
       <button
       type="button"
       role="button"
-      class="btn btn-outline-secondary"
+      class="btn btn-outline-secondary mt-2"
       data-bs-toggle="modal"
       aria-label="Bouton commenter"
       :data-bs-target="`#ModalCommentaire${postid}`">

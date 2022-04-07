@@ -1,6 +1,6 @@
 <template>
   <main  class="container-fluid form-custom-color-white pt-5">     
-    <section class="row mx-5 pb-4" >
+    <section class="mx-lg-5 pb-4" >
       <div v-if="posts.length === 0" class="alert alert-info" role="alert">
        Soyez la première personne à écrire un post !
       </div>
