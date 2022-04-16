@@ -2,24 +2,45 @@ const db = require('../models');
 const fs = require('fs');
 const Post   = db.Post;
 const User   = db.User;
+const checkIdToken = require('../middelware/check-id-token');
+const checkAdmin = require('../middelware/check-admin');
 
+const REGEX_IMAGE = /[^0-9a-zA-Z\._-]/;
 
 // Création d'un post
 exports.createPost = (req, res) => {
+    const id = req.params.id;
+    const checkId = checkIdToken(req);
+    const sanitizedContenu = req.sanitize(req.body.contenu);
     let image = '';
+
     if (req.file) { 
         image = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
     };
-    
-    const post = new Post(
-        {
-            UserId: req.body.UserId,
-            contenu: req.body.contenu,
-            image: image
-        })
-    post.save()
-        .then(() => res.status(201).json({ message: 'Publication réussie' }))
-        .catch((error) => { res.status(400).json({ message: 'erreur 400 - ' + error })})
+
+    if(req.file === undefined) {
+        const post = new Post(
+            {
+                UserId: checkId,
+                contenu: sanitizedContenu,
+                image: image
+            })
+        post.save()
+            .then(() => res.status(201).json({ message: 'Publication réussie' }))
+            .catch((error) => { res.status(400).json({ message: 'erreur 400 - ' + error })})
+    } else {
+        if (!REGEX_IMAGE.test(req.file.filename)){
+            const post = new Post(
+                {
+                    UserId: checkId,
+                    contenu: sanitizedContenu,
+                    image: image
+                })
+            post.save()
+                .then(() => res.status(201).json({ message: 'Publication réussie' }))
+                .catch((error) => { res.status(400).json({ message: 'erreur 400 - ' + error })})
+        }
+    };
 };
 
 // Afficher tous les posts
@@ -36,28 +57,15 @@ exports.allPosts = (req, res) => {
     .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })})
 };
 
-// Afficher un post
-exports.userPosts = (req, res) => {
-    Post.findOne({ 
-        where: { id: req.params.id },
-        attributes: ['contenu', 'image', 'userId', 'createdAt'],
-        order: [['createdAt', 'DESC']],
-        include: [{
-            model: User,
-            attributes: ['nom', 'prenom', 'photo', 'id']
-        }]
-    })  
-    .then((post) => res.status(200).json({post}))
-    .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })})
-};
-
 // Modification des posts
 exports.modifyPost = (req, res) => {
     const id = req.params.id;
+    const checkId = checkIdToken(req);
+    const sanitizedContenu = req.sanitize(req.body.contenu);
 
     const messageObject = req.file ?
     {
-        contenu: req.body.contenu,
+        contenu: sanitizedContenu,
         image: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
     } : { ... req.body};
 
@@ -65,29 +73,90 @@ exports.modifyPost = (req, res) => {
         return res.status(400).json({ message: 'Votre message est vide' });
     } 
 
-    Post.update({
-        ...messageObject, id: id},
-        { where: { id: id }
+    // Vérification du bon utilisateur
+    Post.findOne({ where: { id: id } })
+    .then(post => {
+        if (post.UserId !== checkId) {
+            return res.status(404).json({ error })
+        };
     })
-    .then(() => res.status(200).json({ message: 'Post modifié' }))
-    .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })})
+    .catch(error => res.status(400).json({ error }));
+
+    // Si il n'y a pas d'image, je supprime l'image précédente et écrit du texte
+    if(req.file === undefined) {
+        Post.findOne({ where: { id: id }})
+        .then(imageId => {
+            const filename = imageId.image.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Post.update({
+                    ...messageObject, id: id},
+                    { where: { id: id }
+                })
+                .then(() => res.status(201).json({ message: 'Post modifié !'}))
+                .catch(error => res.status(400).json({ error }));
+            });
+        })
+        .catch(error => res.status(400).json({ error }));
+    // Si il y a une image, je supprime l'image précédente et écrit texte et remplace l'image
+    } else {
+        const photo = req.file.originalname;
+        
+        Post.findOne({ where: { id: id }})
+        .then(imageId => {
+            if (REGEX_IMAGE.test(photo)){
+                return res.send( 'erreur : le nom de la photo est incorrect')
+            }
+
+            const filename = imageId.image.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Post.update({
+                ...messageObject, id: id},
+                { where: { id: id }}
+                )
+                .then(() => res.status(201).json({ message: 'Post Modifié avec une nouvelle image !'}))
+                .catch(error => res.status(400).json({ error }));
+            });
+        })
+        .catch(error => res.status(400).json({ error }));
+    };
 };
 
-// Suppression d'un post
+// Suppression d'un post par l'utilistateur et l'administrateur
 exports.deletePost = (req, res) => {
     const id = req.params.id;
+    const checkId = checkIdToken(req);
 
-    Post.findOne({
-        where: { id: id },
-        attributes: ['image']
+   Post.findOne({
+    where: { id: id },
+    attributes: ['image', 'UserId']
     })
-      .then(post => {
-        const filename = post.image.split('/images/')[1];       
-        fs.unlink(`images/${filename}`, () => {
-            Post.destroy({ where: { id: id }})
-            .then(() => res.status(201).json({ message: 'Post supprimé !' }))
-            .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
-        });
-      })
-      .catch((error) => { res.status(500).json({ message: " erreur 500 - " + error })});
+    .then(post => {
+        if (post.UserId === checkId) {
+            console.log(post.image)
+            if (post.image === null) {
+                Post.destroy({ where: { id: id }})
+                .then(() => res.status(201).json({ message: 'Post supprimé !' }))
+                .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+            }
+            const filename = post.image.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Post.destroy({ where: { id: id }})
+                .then(() => res.status(201).json({ message: 'Post supprimé !' }))
+                .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+            });
+        } else if (checkAdmin) {
+            if (post.image === null) {
+                Post.destroy({ where: { id: id }})
+                .then(() => res.status(201).json({ message: 'Post supprimé !' }))
+                .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+            }
+            const filename = post.image.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Post.destroy({ where: { id: id }})
+                .then(() => res.status(201).json({ message: 'Post supprimé !' }))
+                .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+            });
+        };
+    })
+  .catch((error) => { res.status(500).json({ message: " erreur 500 - " + error })});
 };

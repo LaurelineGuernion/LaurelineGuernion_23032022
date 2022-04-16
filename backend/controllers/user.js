@@ -4,16 +4,21 @@ const User = db.User;
 const cryptoJs = require('crypto-js');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
+// Sécurité vérification TOKEN et ADMIN
+const checkIdToken = require('../middelware/check-id-token');
+const checkAdmin = require('../middelware/check-admin');
 
+// Sécurité REGEX
 const REGEX_EMAIL = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const REGEX_PASSWORD = /^(?=.*\d).{4,15}$/;
+const REGEX_IMAGE = /[^0-9a-zA-Z\._-]/;
 
 // Inscription
 exports.signup = (req, res) => {
-    const nom = req.body.nom;
-    const prenom = req.body.prenom;
-    const email = req.body.email;
-    const password = req.body.password;
+    const nom = req.sanitize(req.body.nom);
+    const prenom = req.sanitize(req.body.prenom);
+    const email = req.sanitize(req.body.email);
+    const password = req.sanitize(req.body.password);
     const cryptedEmail = cryptoJs.HmacSHA256(email, process.env.EMAIL_KEY_CRYPTO).toString();
 
     if (nom == null || prenom == null || email == null || password == null) {
@@ -48,7 +53,7 @@ exports.signup = (req, res) => {
         })
         .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
       } else {
-      // Création user
+      // Création utilisateur
       User.findOne({ where: {email: cryptedEmail }})
       .then(userFound => {
         if (!userFound) {
@@ -78,8 +83,8 @@ exports.signup = (req, res) => {
 
 // Connexion
 exports.login = (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
+  const email = req.sanitize(req.body.email);
+  const password = req.sanitize(req.body.password);
   const cryptedEmail = cryptoJs.HmacSHA256(email, process.env.EMAIL_KEY_CRYPTO).toString();
 
   if (!REGEX_EMAIL.test(email)) {
@@ -112,7 +117,6 @@ exports.login = (req, res) => {
             isAdmin: user.isAdmin,
             prenom: user.prenom,
             nom: user.nom,
-            email:user,email,
             token: jwt.sign(
               { userId: user.id },
               process.env.TOKEN_SECRET,
@@ -131,14 +135,10 @@ exports.findUser = (req, res) => {
   
   .then((user) => res.status(200).json({
     message: ' Utilisateur trouvé ',
-    userId: user.id,
     nom: user.nom,
     prenom: user.prenom,
     photo: user.photo,
-    bio: user.bio,
-    password: user.password,
-    email: user.email,
-    isAdmin: user.isAdmin
+    bio: user.bio
   }))
   .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })})
 };
@@ -153,18 +153,25 @@ exports.findAllUsers = (req, res) => {
   // Mise à jour du compte utilisateur
 exports.updateInfo = (req, res) => {
   const id = req.params.id;
+  const nom = req.sanitize(req.body.nom);
+  const prenom = req.sanitize(req.body.prenom);
+  const bio = req.sanitize(req.body.bio);
+  const checkId = checkIdToken(req);
 
   User.findOne({ where: {id: id }})
     .then(user => {
       if (!user) {
         return res.status(401).json({ error: 'Id non valide !' });
-      }})
+      } else if (user.id !== checkId) {
+        return res.status(404).json({ error: 'l\'id de l\'utilisateur est invalide' })
+      } 
+    })
     .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
 
   User.update(
-    { nom : req.body.nom,
-      prenom : req.body.prenom,
-      bio: req.body.bio
+    { nom : nom,
+      prenom : prenom,
+      bio: bio
     },
     { where: { id: id }}
   )
@@ -175,39 +182,55 @@ exports.updateInfo = (req, res) => {
   // Enregistrer une image profil
 exports.savePhoto = (req, res) => {
   const id = req.params.id;
+  const photo = req.file.originalname;
 
   if (!req.file) {
     return res.send('Télécharger l\'image')
   };
-  
-  User.findOne({ where: { id: id }})
-  
-  .then(idFound => {
-    if (!idFound) {
-      return res.status(401).json({ error: 'Id non valide !' });
-    } else {
-      User.update(
-        { photo: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`},
-        { where: { id: id }}
-      )
-      .then(() => res.status(201).json({ message: 'Photo mise à jour !'}))
-      .catch(error => res.status(400).json({ error }));
+
+    User.findOne({ where: { id: id }})
+    .then(idFound => {
+      if (!idFound) {
+        return res.status(401).json({ error: 'Id non valide !' });
+      } else if (REGEX_IMAGE.test(photo)){
+        return res.send( 'erreur : le nom de la photo est incorrect')
+      } else if (idFound.photo === null)  {
+          User.update(
+            { photo: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`},
+            { where: { id: id }}
+          )
+          .then(() => res.status(201).json({ message: 'Photo mise à jour !'}))
+          .catch(error => res.status(400).json({ error }));
+      } else {
+      const filename = idFound.photo.split('/images/')[1];
+      fs.unlink(`images/${filename}`, () => {
+        User.update(
+          { photo: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`},
+          { where: { id: id }}
+        )
+        .then(() => res.status(201).json({ message: 'Photo mise à jour !'}))
+        .catch(error => res.status(400).json({ error }));
+      });
     }
-  })
-  .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
+    })
+    .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
 };
 
 // Mise à jour de l'email
 exports.updateEmail = (req, res) => {
   const id = req.params.id;
-  const email = req.body.email;
+  const email = req.sanitize(req.body.email);
   const cryptedEmail = cryptoJs.HmacSHA256(email, process.env.EMAIL_KEY_CRYPTO).toString();
+  const checkId = checkIdToken(req);
 
   User.findOne({ where: {id: id }})
     .then(user => {
       if (!user) {
         return res.status(401).json({ error: 'Id non valide !' });
-      }})
+      }  else if (user.id !== checkId) {
+        return res.status(404).json({ error: 'l\'id de l\'utilisateur est invalide' })
+      }
+    })
     .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
 
   User.update(
@@ -222,8 +245,9 @@ exports.updateEmail = (req, res) => {
 // Mise à jour du mot de passe utilisateur
 exports.updatePassword =  (req, res) => {
   const id = req.params.id;
-  const password = req.body.password;
+  const password = req.sanitize(req.body.password);
   const hash =  bcrypt.hashSync(password, 10);
+  const checkId = checkIdToken(req);
 
   if(!REGEX_PASSWORD.test(password)){
     return res.status(400).json({ 'erreur':'Mot de passe invalide' })
@@ -233,7 +257,10 @@ exports.updatePassword =  (req, res) => {
   .then(user => {
     if (!user) {
       return res.status(401).json({ error: 'Id non valide !' });
-    }})
+    } else if (user.id !== checkId) {
+      return res.status(404).json({ error: 'l\'id de l\'utilisateur est invalide' })
+    }
+  })
   .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
     
   User.update(
@@ -244,29 +271,52 @@ exports.updatePassword =  (req, res) => {
   .catch((error) => { res.status(500).json({ message: ' erreur 500 - ' + error })})
 };
 
-// Supprimer un compte utilisateur
+// Supprimer un compte utilisateur par l'utilisateur ou l'administrateur
 exports.delete = (req, res) => {
   const id = req.params.id;
+  const checkId = checkIdToken(req);
 
   User.findOne({
     where: {id: id },
     attributes: ['photo']
   })
+  
   .then(user => {
-    if (!user) {
-      return res.status(409).json({ error: 'Id non valide !' });
-    } else if(user.photo) {
-      const filename = user.photo.split('/images/')[1];
-      fs.unlink(`images/${filename}`, () => {
-      User.destroy ({ where: { id: id }})
-          .then(() => res.status(201).json({ message: 'Utilisateur supprimé !' }))
-          .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
-      });
-    } else {
-      User.destroy ({ where: { id: id }})
-          .then(() => res.status(201).json({ message: 'Utilisateur supprimé !' }))
-          .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
-    }
+    // Suppression par l'utilisateur
+    if (user.id === checkId) {
+      // Vérification que l'id existe
+      if (!user) {
+        return res.status(409).json({ error: 'Id non valide !' });
+      } else if(user.photo) {
+        const filename = user.photo.split('/images/')[1];
+        fs.unlink(`images/${filename}`, () => {
+        User.destroy ({ where: { id: id }})
+            .then(() => res.status(201).json({ message: 'Utilisateur supprimé !' }))
+            .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+        });
+      } else {
+        User.destroy ({ where: { id: id }})
+            .then(() => res.status(201).json({ message: 'Utilisateur supprimé !' }))
+            .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+      }
+      // Suppression par l'administrateur
+    } else if (checkAdmin) {
+      // Vérification que l'id existe
+      if (!user) {
+        return res.status(409).json({ error: 'Id non valide !' });
+      } else if(user.photo) {
+        const filename = user.photo.split('/images/')[1];
+        fs.unlink(`images/${filename}`, () => {
+        User.destroy ({ where: { id: id }})
+            .then(() => res.status(201).json({ message: 'Utilisateur supprimé par l\'admin !' }))
+            .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+        });
+      } else {
+        User.destroy ({ where: { id: id }})
+            .then(() => res.status(201).json({ message: 'Utilisateur supprimé par l\'admin !' }))
+            .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+      }
+    };
   })
-  .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
+  .catch((error) => { res.status(500).json({ message: " erreur 500 - " + error })});
 };

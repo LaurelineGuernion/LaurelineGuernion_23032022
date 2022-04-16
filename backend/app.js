@@ -6,10 +6,12 @@ const cors = require('cors');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const { Sequelize } = require('sequelize');
+const expressSanitizer = require('express-sanitizer');
 
 const app = express();
 
 app.use(express.json ({limite: '10kb'}));
+app.use(expressSanitizer());
 app.use(cors());
 app.use(helmet());
 app.use(xss());

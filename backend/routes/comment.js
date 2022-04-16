@@ -8,7 +8,6 @@ const multer = require('../middelware/multer-config');
 //////////////////// ROUTES COMMENT ////////////////////
 router.post('/', auth, multer, postCtrl.createComment);
 router.get('/:id', auth, postCtrl.AllCommentsPost);
-router.get('/:id/comments', auth, postCtrl.CommentsProfil);
 router.put('/:id', auth, multer, postCtrl.modifyComment);
 router.delete('/:id', auth, postCtrl.deleteComment);
 
