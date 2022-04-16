@@ -108,6 +108,7 @@
   const notyf = new Notyf();
   const formData = new FormData();
   const RegexTexarea = /^\s+|\s+$/;
+  const RegexImage = /[^0-9a-zA-Z._-]/;
 
   export default {
     name: 'Posts',
@@ -127,6 +128,9 @@
     created() {        
     let id = localStorage.getItem('userId');
 
+    const url = window.location.href;
+    this.urlId = url.split("/").slice(-1)[0];
+
     AxiosAuth.get("http://localhost:3000/api/auth/" + id, { headers: {"Authorization": "Bearer " + localStorage.getItem("token")} })
     .then(response => {  
         this.user.photo = response.data.photo; 
@@ -144,11 +148,11 @@
       },
 
       createPost() {
-        if(RegexTexarea.test(this.post.contenu)) {
+        if(RegexTexarea.test(this.post.contenu) || RegexImage.test(this.post.image.name)) {
           notyf.open ({
           type: 'info',
           background: 'orange',
-          message: 'Champs vide'});
+          message: 'Champs vide ou erreur image'});
         } else {
           formData.append('image', this.post.image);
           formData.append('contenu', this.post.contenu);

@@ -69,8 +69,9 @@
             </div>
 
             <!-- Boutons supprimer/éditer commentaires -->
-            <div v-if="idUser == comment.User.id || isAdmin === 'true'">
+            <div>
               <button
+              v-if="idUser == comment.User.id || isAdmin === 'true'"
               type="submit"
               role="button"
               aria-label="Supprimer commentaire"
@@ -83,6 +84,7 @@
               </button>
 
               <button
+              v-if="idUser == comment.User.id"
               type="submit"
               role="button"
               aria-label="Éditer commentaire"
@@ -289,7 +291,7 @@
   const formData = new FormData();
 
   export default {
-    name: "Post",
+    name: "Comments",
     props: ['postid'],
     data() {
       return {
@@ -346,7 +348,7 @@
           notyf.open ({
           type: 'info',
           background: 'orange',
-          message: 'Champs vide'});
+          message: 'Champs vide ou erreur champs'});
         } else {
           formData.append('contenu', this.newComment)
 

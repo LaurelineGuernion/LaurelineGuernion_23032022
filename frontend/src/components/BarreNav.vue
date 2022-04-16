@@ -100,9 +100,10 @@
     data() {
       return { 
           prenom: '',
-          userId: ''    
+          userId: ''
       }
     },
+
     mounted() {
       if (localStorage.prenom) {
         this.prenom = localStorage.prenom;

@@ -32,7 +32,7 @@
 
             <!-- Bouton modifier image -->
             <button
-            v-if="localstorageIsAdmin === 'true' || urlId === localstorageUserId"
+            v-if="urlId === localstorageUserId"
             @click="show"
             type="button"
             role="button"
@@ -95,7 +95,7 @@
               </h2>
 
               <button
-              v-if="localstorageIsAdmin === 'true' || urlId === localstorageUserId"
+              v-if="urlId === localstorageUserId"
               @click="show"
               class="btn rounded-pill p-0 ms-2"
               type="button"
@@ -153,7 +153,7 @@
               </h2>
 
               <button
-              v-if="localstorageIsAdmin === 'true' || urlId === localstorageUserId"
+              v-if="urlId === localstorageUserId"
               @click="show"
               class="btn rounded-pill p-0 ms-2"
               type="button"
@@ -212,7 +212,7 @@
               </h2>
 
               <button
-              v-if="localstorageIsAdmin === 'true' || urlId === localstorageUserId"
+              v-if="urlId === localstorageUserId"
               @click="show"
               class="btn rounded-pill p-0 ms-2"
               type="button"
@@ -272,7 +272,7 @@
             <!-- MODIFIER LES IDENTIFIANTS DE CONNEXION -->
             <div class="d-flex mt-5 mb-3">
               <button
-              v-if="localstorageIsAdmin === 'true' || urlId === localstorageUserId"
+              v-if="urlId === localstorageUserId"
               @click="show"
               role="role"
               aria-label="Afficher modification identifiants"
@@ -386,6 +386,7 @@
   const formData = new FormData();
   const params = new URLSearchParams();
   const RegexTexarea = /^\s+|\s+$/;
+  const RegexImage = /[^0-9a-zA-Z._-]/;
 
   export default {
     name: 'Profil',
@@ -399,7 +400,7 @@
         newPassWord:'',
         newEmail:'',
         isDisplay: false,
-        isAdmin: true
+        isAdmin: true,
       }
     },
 
@@ -436,11 +437,18 @@
       },
 
       modifyImageProfil() {
+          if(RegexImage.test(this.image.name)) {
+          notyf.open ({
+          type: 'info',
+          background: 'orange',
+          message: 'Erreur nom image' });
+        } else {
         formData.set('image', this.image)
 
         AxiosAuth.put(`http://localhost:3000/api/auth/${this.urlId}/savephoto`, formData, { headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')} })
         .then(() => notyf.success('Image modifiée !'))
         .catch ((error) => error + notyf.error('Erreur modification image, réessayez !'));
+        }
       },
 
       modifyName() {

@@ -34,7 +34,7 @@ const routes = [
 {
   path: '/members',
   name: 'Members',
-  component: () => import("../views/Members")
+  component: () => import("../views/Members"),
 }
 ]
 

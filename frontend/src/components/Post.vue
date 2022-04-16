@@ -46,9 +46,11 @@
               </div>
             </router-link>
 
-            <div v-if="idUser == post.User.id || isAdmin === 'true'">
+
               <!-- Bouton supprimer posts -->
+            <div>
               <button
+              v-if="idUser == post.User.id || isAdmin === 'true'"
               type="submit"
               role="button"
               aria-label="Supprimer post"
@@ -63,6 +65,7 @@
 
               <!-- Bouton éditer posts -->
               <button
+              v-if="idUser == post.User.id"
               type="submit"
               role="button"
               class="btn"
@@ -75,6 +78,7 @@
                   alt="Édit post" />
               </button>
             </div>
+
 
           </div>
           <p class="card-text text-start mt-4">
@@ -94,7 +98,7 @@
         :id="'exampleModal'+index" tabindex="-1"
         aria-labelledby="Fenêtre modification post"
         aria-hidden="true"
-        v-if="idUser == post.User.id || isAdmin === 'true'">
+        v-if="idUser == post.User.id">
 
           <div class="modal-dialog">
             <div class="modal-content">
@@ -197,6 +201,7 @@
 <script>
   import { AxiosAuth } from '../services/AxiosAuth'
   import Comments from '@/components/Comments.vue'
+
   import { Notyf } from 'notyf';
   import 'notyf/notyf.min.css';
 
@@ -240,12 +245,11 @@
       },
 
       modifyPost(post) {
-        console.log(post)
         if(RegexTexarea.test(this.newContent)) { 
           notyf.open ({
           type: 'info',
           background: 'orange',
-          message: 'Champs vide'});
+          message: 'Champs vide ou erreur champs'});
         } else {
           formData.set('image', this.image)
           formData.set('contenu', this.newContent)
@@ -259,7 +263,7 @@
       deletePost(id) {
         AxiosAuth.delete('http://localhost:3000/api/posts/' + id, { headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')} })
         .then(() => notyf.success('Post supprimé !'))
-        .catch ((error) => error + notyf.error('Erreur suppression post, réessayez !'));
+        .catch ((error) => console.log(error.response));
       }
     }
   }

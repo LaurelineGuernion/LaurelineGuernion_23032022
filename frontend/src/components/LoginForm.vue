@@ -100,8 +100,7 @@
           localStorage.setItem('token', response.data.token)
           localStorage.setItem('userId', response.data.userId)
           localStorage.setItem('prenom', response.data.prenom)
-          localStorage.setItem('nom', response.data.nom),
-          localStorage.setItem('email', response.data.email)
+          localStorage.setItem('nom', response.data.nom)
           localStorage.setItem('isAdmin', response.data.isAdmin)
           notyf.success('Connexion réussie !'), router.push({ path : '/Posts'})
         })
