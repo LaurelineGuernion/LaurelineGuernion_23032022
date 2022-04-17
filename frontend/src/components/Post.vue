@@ -166,7 +166,7 @@
                 <!-- Boutons envoi post -->
                 <button
                 v-if="newContent !== '' || this.image !== ''"
-                 @click.prevent="modifyPost(post.id)"
+                 @click.prevent="modifyPost(post.id), reload()"
                  type="button"
                  role="button"
                  class="btn btn-dark align-items-center rounded-pill"
