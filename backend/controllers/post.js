@@ -69,10 +69,6 @@ exports.modifyPost = (req, res) => {
         image: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
     } : { ... req.body};
 
-    if(messageObject.contenu === undefined || messageObject.contenu === null) {
-        return res.status(400).json({ message: 'Votre message est vide' });
-    } 
-
     // Vérification du bon utilisateur
     Post.findOne({ where: { id: id } })
     .then(post => {
@@ -82,7 +78,7 @@ exports.modifyPost = (req, res) => {
     })
     .catch(error => res.status(400).json({ error }));
 
-    // Si il n'y a pas d'image, je supprime l'image précédente et écrit du texte
+    // Je supprime l'image précédente si il y a et écrit du texte
     if(req.file === undefined) {
         Post.findOne({ where: { id: id }})
         .then(imageId => {
@@ -97,13 +93,27 @@ exports.modifyPost = (req, res) => {
             });
         })
         .catch(error => res.status(400).json({ error }));
+    // Contenu vide mais envoi une image
+    }  else if( messageObject.contenu === undefined || messageObject.contenu === null ) {
+        const messageImage = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+
+        const post = new Post(
+            {
+                UserId: checkId,
+                contenu: sanitizedContenu,
+                image: messageImage
+            })
+        post.save()
+                .then(() => res.status(201).json({ message: 'Post modifié !'}))
+                .catch(error => res.status(400).json({ error }));
+
     // Si il y a une image, je supprime l'image précédente et écrit texte et remplace l'image
     } else {
         const photo = req.file.originalname;
-        
         Post.findOne({ where: { id: id }})
         .then(imageId => {
             if (REGEX_IMAGE.test(photo)){
+                console.log('ici image pa bonne')
                 return res.send( 'erreur : le nom de la photo est incorrect')
             }
 

@@ -166,7 +166,7 @@
                 <!-- Boutons envoi post -->
                 <button
                 v-if="newContent !== '' || this.image !== ''"
-                 @click.prevent="modifyPost(post.id), reload()"
+                 @click.prevent="modifyPost(post.id)"
                  type="button"
                  role="button"
                  class="btn btn-dark align-items-center rounded-pill"
@@ -208,6 +208,7 @@
   const notyf = new Notyf();
   const formData = new FormData()
   const RegexTexarea = /^\s+|\s+$/;
+  const RegexImage = /[^0-9a-zA-Z._-]/;
 
   export default {
     name: "Post",
@@ -245,7 +246,7 @@
       },
 
       modifyPost(post) {
-        if(RegexTexarea.test(this.newContent)) { 
+        if(RegexTexarea.test(this.newContent) || RegexImage.test(this.image.name) ) { 
           notyf.open ({
           type: 'info',
           background: 'orange',
