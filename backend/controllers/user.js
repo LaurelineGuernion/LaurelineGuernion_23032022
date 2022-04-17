@@ -155,7 +155,7 @@ exports.updateInfo = (req, res) => {
   const id = req.params.id;
   const nom = req.sanitize(req.body.nom);
   const prenom = req.sanitize(req.body.prenom);
-  const bio = req.sanitize(req.body.bio);
+  const bio = req.body.bio;
   const checkId = checkIdToken(req);
 
   User.findOne({ where: {id: id }})
