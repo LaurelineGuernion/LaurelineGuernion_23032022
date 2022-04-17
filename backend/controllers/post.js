@@ -78,7 +78,7 @@ exports.modifyPost = (req, res) => {
     })
     .catch(error => res.status(400).json({ error }));
 
-    // Je supprime l'image précédente si il y a et écrit du texte
+    // Je supprime l'image précédente si elle existe et écrit du texte
     if(req.file === undefined) {
         Post.findOne({ where: { id: id }})
         .then(imageId => {
@@ -95,17 +95,30 @@ exports.modifyPost = (req, res) => {
         .catch(error => res.status(400).json({ error }));
     // Contenu vide mais envoi une image
     }  else if( messageObject.contenu === undefined || messageObject.contenu === null ) {
+        const photo = req.file.originalname;
         const messageImage = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
-        Post.update({
-            contenu: '',
-            image: messageImage, id: id},
-            { where: { id: id }
-        })
+        Post.findOne({ where: { id: id }})
+        .then(imageId => {
+            if (REGEX_IMAGE.test(photo)){
+                console.log('ici image pa bonne')
+                return res.send( 'erreur : le nom de la photo est incorrect')
+            }
+
+            const filename = imageId.image.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Post.update({
+                    contenu: null,
+                    image: messageImage, id: id},
+                    { where: { id: id }
+                })
                 .then(() => res.status(201).json({ message: 'Post modifié !'}))
                 .catch(error => res.status(400).json({ error }));
+            });
+        })
+        .catch(error => res.status(400).json({ error }));
 
-    // Si il y a une image, je supprime l'image précédente et écrit texte et remplace l'image
+    // Si il y a une image, je la supprime et écrit du texte et remplace l'image
     } else {
         const photo = req.file.originalname;
         Post.findOne({ where: { id: id }})
