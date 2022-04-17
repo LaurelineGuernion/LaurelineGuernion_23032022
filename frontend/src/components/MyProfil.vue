@@ -495,19 +495,24 @@
       modifyPassword() {
         params.append('password', this.newPassWord);
         AxiosAuth.put(`http://localhost:3000/api/auth/${this.urlId}/updatepassword`, params, { headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')} })
-        .then(() =>
-        notyf.success('Modification du mot de passe, reconnectez-vous !'))                
-        localStorage.clear()
-        router.push({ path : '/login'})
+        .then(() => 
+          notyf.success('Modification du mot de passe, reconnectez-vous !'))                
+          localStorage.clear()
+          router.push({ path : '/login'})
         .catch ((error) => console.log(error.response));
       },
 
       deleteAccount() {
         AxiosAuth.delete('http://localhost:3000/api/auth/' + this.urlId, { headers: {"Authorization": "Bearer " + localStorage.getItem("token")} })
-        .then(() =>
-        notyf.success('Compte supprimé !'),                 
-        localStorage.clear(),
-        router.push({ path : '/signup'}))
+        .then(() => {
+          notyf.success('Compte supprimé !')   
+          if (this.localstorageIsAdmin === 'false') {           
+            localStorage.clear(),
+            router.push({ path : '/signup'})
+          } else {           
+            router.push({ path : '/members'})
+          }
+        })
         .catch (() => notyf.error('Erreur compte non supprimé, réessayer !'))
       }
     }
