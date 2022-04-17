@@ -97,13 +97,11 @@ exports.modifyPost = (req, res) => {
     }  else if( messageObject.contenu === undefined || messageObject.contenu === null ) {
         const messageImage = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
-        const post = new Post(
-            {
-                UserId: checkId,
-                contenu: sanitizedContenu,
-                image: messageImage
-            })
-        post.save()
+        Post.update({
+            contenu: '',
+            image: messageImage, id: id},
+            { where: { id: id }
+        })
                 .then(() => res.status(201).json({ message: 'Post modifié !'}))
                 .catch(error => res.status(400).json({ error }));
 
