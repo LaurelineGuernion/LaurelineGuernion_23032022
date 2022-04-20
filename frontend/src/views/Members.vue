@@ -6,20 +6,20 @@
 </template>
 
 <script>
-import BarreNav from "@/components/BarreNav";
-import ListUsers from "@/components/ListUsers";
-import router from '../router';
+  import BarreNav from "@/components/BarreNav";
+  import ListUsers from "@/components/ListUsers";
+  import router from '../router';
 
-export default {
-  name: 'Members',
-  components: {
-    BarreNav, ListUsers
-  },
-  
-  mounted() {
-    if (localStorage.token === undefined) {
-      router.push({ path : '/'});
+  export default {
+    name: 'Members',
+    components: {
+      BarreNav, ListUsers
+    },
+    
+    mounted() {
+      if (localStorage.token === undefined) {
+        router.push({ path : '/'});
+      }
     }
   }
-}
 </script>

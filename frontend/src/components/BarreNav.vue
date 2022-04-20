@@ -2,9 +2,9 @@
   <header> 
     <nav
     class="navbar navbar-expand-lg navbar-dark principal--color"
-    aria-labelledby="Barre de navigation">
+    aria-labelledby="Barredenavigation">
       <div class="container-fluid">
-        <router-link to="/">
+        <router-link to="/" id="Barredenavigation">
           <!-- Logo Groupomania -->
           <img
           class="navbar-brand"
@@ -31,7 +31,8 @@
         id="navbarNav">
 
           <ul class="navbar-nav">
-            <li class="nav-item text-white mt-3 px-4">
+            <li
+            class="nav-item text-white mt-3 px-4">
               <p>
                 <strong>
                   Bonjour {{ prenom }}

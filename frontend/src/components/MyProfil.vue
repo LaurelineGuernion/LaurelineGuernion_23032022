@@ -146,11 +146,11 @@
 
             <!-- Modifier prénom -->
             <div class="d-flex">
-              <h2 class="h6 text-start mb-0 d-flex align-items-center">
+              <h3 class="h6 text-start mb-0 d-flex align-items-center">
                 <strong>
                   Prénom
                 </strong>
-              </h2>
+              </h3>
 
               <button
               v-if="urlId === localstorageUserId"
@@ -205,11 +205,11 @@
 
             <!-- Modifier Bio -->
             <div class="d-flex">
-              <h2 class="h6 text-start mb-0 d-flex align-items-center">
+              <h3 class="h6 text-start mb-0 d-flex align-items-center">
                 <strong>
                   Bio
                 </strong>
-              </h2>
+              </h3>
 
               <button
               v-if="urlId === localstorageUserId"
@@ -274,7 +274,6 @@
               <button
               v-if="urlId === localstorageUserId"
               @click="show"
-              role="role"
               aria-label="Afficher modification identifiants"
               class="btn btn-dark d-flex rounded-pill"
               data-bs-toggle="collapse"
@@ -346,7 +345,7 @@
 
                 <button
                 type="submit"
-                roloe="button"
+                role="button"
                 aria-label="Envoi modification mot de passe"
                 class="btn d-flex btn-outline-dark mx-2 rounded-pill">
                   <font-awesome-icon

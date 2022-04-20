@@ -1,5 +1,5 @@
 <template>
-  <main class="container-fluid form-custom-color-white pb-5">
+  <section class="container-fluid form-custom-color-white pb-5">
     <h1 class="h3 pt-5 pb-2">
       Partager un post
     </h1>
@@ -35,9 +35,10 @@
         <!-- Champs texte envoi -->
         <textarea
         class="form-control me-auto"
-        id="message-text"
         row="1"
+        id="formcreationpost"
         v-model="post.contenu"
+        title="Création post"
         placeholder="Créer un post…"
         aria-label="Créer un post…">
         </textarea>
@@ -59,8 +60,8 @@
           type="file"
           @change="uploadFile"
           class="form-control rounded-pill form-control-sm ms-3"
-          name="image"
-          id="image"
+          name="imagecreationpost"
+          id="imagecreationpost"
           ref="image"
           aria-label="Choix image post"/>
         </label>
@@ -97,7 +98,7 @@
       </section>
       
     </form>
-  </main>
+  </section>
 </template>
 
 <script>

@@ -23,12 +23,12 @@
         </div>
         
         <!-- Informations -->
-        <div class="card-body">
+        <aside class="card-body">
           <h5 class="card-title">{{ user.nom.charAt(0).toUpperCase() + user.nom.slice(1) +  " " + user.prenom.charAt(0).toUpperCase() + user.prenom.slice(1) }}</h5>
           <p v-if="user.bio === '' || user.bio !== null" class="card-text">{{ user.bio }}</p>
           <p v-else class="card-text">Aucune bio pour le moment</p>
           <router-link class="btn btn-dark rounded-pill" :to="`/${user.id}`">Voir le profil</router-link>
-        </div>
+        </aside>
       </article>
     </section>
 

@@ -1,6 +1,6 @@
 <template>
   <!-- LES BOUTONS COMMENTAIRES/COMMENTER-->
-  <main>
+  <article>
     <section class="gap-3 mb-3 mt-3">
       <!-- Bouton commentaires -->
       <button
@@ -46,7 +46,7 @@
         <div class="m-3 rounded-3 shadow-sm pe-1">
           <div class="d-flex justify-content-between">
 
-            <!-- Descriptif utilisateurs (image, nom/prénom -->
+            <!-- Descriptif utilisateur (image, nom/prénom -->
             <div  class="d-flex align-items-center accordion-body">
               <img
               v-if="comment.User.photo !== null"
@@ -109,8 +109,7 @@
     <p
     :id="`afficheCommentaires${postid}`"
     v-if="!comments.length"
-    class="collapse m-3"
-    aria-labelledby="Aucun commentaire">
+    class="collapse m-3">
       Aucun commentaire
     </p>
 
@@ -119,7 +118,6 @@
     class="modal fade"
     :id="`ModalCommentaire${postid}`"
     tabindex="-1"
-    aria-labelledby="Commentaire label"
     aria-hidden="true">
 
       <section class="modal-dialog">
@@ -127,8 +125,7 @@
           <div class="modal-header">
             <h5
             class="modal-title"
-            id="commentaireLabel"
-            aria-labelledby="Mon commentaire">
+            id="commentaireLabel">
             Mon commentaire
             </h5>
 
@@ -153,7 +150,7 @@
             </div>
             <textarea
             class="form-control"
-            id="message-text"
+            id="message-text-commentaire"
             v-model="comment.contenu"
             placeholder="Écrire un commentaire…"
             aria-label="Créer un commentaire…" />
@@ -231,13 +228,13 @@
             <form enctype="multipart/form-data">
               <div class="mb-3">
                 <label
-                for="message-text"
+                for="modification-commentaire"
                 class="col-form-label">
                 Mon nouveau commentaire :
                 </label>
                 <textarea
                 class="form-control"
-                id="message-text"
+                id="modification-commentaire"
                 v-model="newComment"
                 placeholder="Modifier mon commentaire…">
                 </textarea>
@@ -278,7 +275,7 @@
       </div>
     </div>
 
-  </main>
+  </article>
 </template>
 
 <script>

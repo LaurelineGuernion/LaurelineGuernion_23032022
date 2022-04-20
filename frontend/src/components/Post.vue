@@ -21,7 +21,7 @@
                 v-if="post.User.photo !== null"
                 class="rounded-circle imageprofil--size"
                 :src ="post.User.photo"
-                alt="Photo de l'utilisateur" />
+                alt="" />
 
                 <div
                 v-else
@@ -79,7 +79,6 @@
               </button>
             </div>
 
-
           </div>
           <p class="card-text text-start mt-4">
             {{ post.contenu }}
@@ -88,26 +87,22 @@
         <img
         v-if="post.image !== ''"
         :src ="post.image"
-        id="imgpost"
         class="card-img-bottom principal--color"
-        alt="Image du post" />
+        alt="" />
 
         <!-- FENÊTRE MODIFICATION POSTS -->
         <div
         class="modal fade"
         :id="'exampleModal'+index" tabindex="-1"
-        aria-labelledby="Fenêtre modification post"
         aria-hidden="true"
         v-if="idUser == post.User.id">
 
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5
-                class="modal-title"
-                id="exampleModalLabel">
+                <h4 class="modal-title h4">
                   Modifiez votre post
-                </h5>
+                </h4>
 
                 <button
                 type="button"
@@ -121,17 +116,10 @@
               <div class="modal-body">
                 <form enctype="multipart/form-data" aria-label="Formulaire envoi nouveau post">
                   <div class="mb-3">
-                    <label
-                    for="message-text"
-                    class="col-form-label"
-                    aria-label="Mon nouveau post">
-                      Mon nouveau post :
-                    </label>
 
                     <!-- Champs modification post -->
                     <textarea
                     class="form-control"
-                    id="message-text"
                     v-model="newContent"
                     placeholder="Modifier mon post…"
                     aria-label="Champs modifier le post">
