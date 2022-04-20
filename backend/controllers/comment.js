@@ -56,12 +56,12 @@ exports.modifyComment = (req, res) => {
     })
     .catch((error) => { res.status(500).json({ message: ' erreur serveur - ' + error })})
     
-    Comment.update({ contenu: sanitizedContenu }, { where: { id: req.params.id }})
+    Comment.update({ contenu: sanitizedContenu }, { where: { id: id }})
     .then(() => res.status(200).json({ message: 'Commentaire modifié' }))
     .catch((error) => { res.status(404).json({ message: ' erreur 404 - ' + error })})
 };
 
-// Suppression du commentaire par l'utilisateur ou l'admin
+// Suppression du commentaire par l'utilisateur ou l'administrateur
 exports.deleteComment = (req, res) => {
     const id = req.params.id;
     const checkId = checkIdToken(req);
@@ -72,10 +72,12 @@ exports.deleteComment = (req, res) => {
         })
 
     .then(comment => {
+        // Suppression par l'utilisateur
         if (comment.UserId === checkId) {
             Comment.destroy({ where: { id: id }})
             .then(() => res.status(201).json({ message: 'Commentaire supprimé !' }))
             .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
+        // Suppression par l'administrateur
         } else if (checkAdmin) {
             Comment.destroy({ where: { id: id }})
             .then(() => res.status(201).json({ message: 'Commentaire supprimé par l\'administrateur !' }))

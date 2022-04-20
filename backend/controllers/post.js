@@ -93,7 +93,7 @@ exports.modifyPost = (req, res) => {
             });
         })
         .catch(error => res.status(400).json({ error }));
-    // Contenu vide mais envoi une image
+    // Contenu textuel vide mais envoi d'une image
     }  else if( messageObject.contenu === undefined || messageObject.contenu === null ) {
         const photo = req.file.originalname;
         const messageImage = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
@@ -101,7 +101,6 @@ exports.modifyPost = (req, res) => {
         Post.findOne({ where: { id: id }})
         .then(imageId => {
             if (REGEX_IMAGE.test(photo)){
-                console.log('ici image pa bonne')
                 return res.send( 'erreur : le nom de la photo est incorrect')
             }
 
@@ -152,8 +151,8 @@ exports.deletePost = (req, res) => {
     attributes: ['image', 'UserId']
     })
     .then(post => {
+        // Suppression par l'utilisateur
         if (post.UserId === checkId) {
-            console.log(post.image)
             if (post.image === null) {
                 Post.destroy({ where: { id: id }})
                 .then(() => res.status(201).json({ message: 'Post supprimé !' }))
@@ -165,6 +164,7 @@ exports.deletePost = (req, res) => {
                 .then(() => res.status(201).json({ message: 'Post supprimé !' }))
                 .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
             });
+        // Suppression par l'administrateur
         } else if (checkAdmin) {
             if (post.image === null) {
                 Post.destroy({ where: { id: id }})

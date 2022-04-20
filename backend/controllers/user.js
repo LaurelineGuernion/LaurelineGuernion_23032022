@@ -131,7 +131,9 @@ exports.login = (req, res) => {
 
 // Trouver un utilisateur
 exports.findUser = (req, res) => {
-  User.findOne({ where: { id: req.params.id } })
+  const id = req.params.id;
+
+  User.findOne({ where: { id: id } })
   
   .then((user) => res.status(200).json({
     message: ' Utilisateur trouvé ',
@@ -194,6 +196,7 @@ exports.savePhoto = (req, res) => {
         return res.status(401).json({ error: 'Id non valide !' });
       } else if (REGEX_IMAGE.test(photo)){
         return res.send( 'erreur : le nom de la photo est incorrect')
+        // Si il n'y a pas de photo, mettre une nouvelle photo
       } else if (idFound.photo === null)  {
           User.update(
             { photo: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`},
@@ -201,6 +204,7 @@ exports.savePhoto = (req, res) => {
           )
           .then(() => res.status(201).json({ message: 'Photo mise à jour !'}))
           .catch(error => res.status(400).json({ error }));
+          // Si il y a une photo, la supprimer et la remplacer
       } else {
       const filename = idFound.photo.split('/images/')[1];
       fs.unlink(`images/${filename}`, () => {
@@ -287,6 +291,7 @@ exports.delete = (req, res) => {
       // Vérification que l'id existe
       if (!user) {
         return res.status(409).json({ error: 'Id non valide !' });
+      // Si il y a une photo, la supprimer avec le compte
       } else if(user.photo) {
         const filename = user.photo.split('/images/')[1];
         fs.unlink(`images/${filename}`, () => {
@@ -294,6 +299,7 @@ exports.delete = (req, res) => {
             .then(() => res.status(201).json({ message: 'Utilisateur supprimé !' }))
             .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
         });
+      // Sinon, pas de photo on supprimer simplement le compte
       } else {
         User.destroy ({ where: { id: id }})
             .then(() => res.status(201).json({ message: 'Utilisateur supprimé !' }))
@@ -304,6 +310,7 @@ exports.delete = (req, res) => {
       // Vérification que l'id existe
       if (!user) {
         return res.status(409).json({ error: 'Id non valide !' });
+      // Si il y a une photo, la supprimer avec le compte
       } else if(user.photo) {
         const filename = user.photo.split('/images/')[1];
         fs.unlink(`images/${filename}`, () => {
@@ -311,6 +318,7 @@ exports.delete = (req, res) => {
             .then(() => res.status(201).json({ message: 'Utilisateur supprimé par l\'admin !' }))
             .catch((error) => { res.status(400).json({ message: " erreur 400 - " + error })});
         });
+      // Sinon, pas de photo on supprimer simplement le compte
       } else {
         User.destroy ({ where: { id: id }})
             .then(() => res.status(201).json({ message: 'Utilisateur supprimé par l\'admin !' }))
