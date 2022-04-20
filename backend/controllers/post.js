@@ -123,7 +123,6 @@ exports.modifyPost = (req, res) => {
         Post.findOne({ where: { id: id }})
         .then(imageId => {
             if (REGEX_IMAGE.test(photo)){
-                console.log('ici image pa bonne')
                 return res.send( 'erreur : le nom de la photo est incorrect')
             }
 
