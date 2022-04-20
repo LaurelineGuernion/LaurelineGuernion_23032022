@@ -44,7 +44,7 @@ Puis connexion au serveur
 * Remplir les champs du fichier .env.initial pour personnaliser vos accès.
 * Renommer ce même fichier en .env
 
-* Il est probable d'adapter Node Js pour que l'application fonctionne, suivre les liens suivants :
+* Il est probable d'adapter Node Js pour que l'application fonctionne
 - Installation avec Brew, dans le terminal :
 `brew install node`
 
