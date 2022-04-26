@@ -41,8 +41,12 @@ Puis connexion au serveur
     - Faire `Exit` pour sortir de MYSQL.
     - Dans le terminal : `mysql - u utilisateur -p nombasededonnees < groupomania_developpement.sql ;`
 
-* Remplir les champs du fichier .env.initial pour personnaliser vos accès.
-* Renommer ce même fichier en .env
+* Dans backend/config, personnaliser vos informations dans le fichier .env-initial, ajouter après "=" :
+    - Dans TOKEN_SECRET, EMAIL_KEY_CRYPTO= ses mots de passe composés de chiffres, alphabet majuscule/minuscule,
+    - Dans DB_USERNAME= son nom d'utilisateur de la base de données,
+    - Dans DB_PASSWORD=  son mot de passe de la base de données,
+    - DEV_DB_NAME= le nom de la base de données,
+* Par la suite, renommer le fichier .env-initial en .env en supprimer "-initial".
 
 #### Il est probable d'adapter Node Js pour que l'application fonctionne
 - Installation avec Brew, dans le terminal :
