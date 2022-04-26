@@ -46,7 +46,7 @@ Puis connexion au serveur
     - Dans DB_USERNAME= son nom d'utilisateur de la base de données,
     - Dans DB_PASSWORD=  son mot de passe de la base de données,
     - DEV_DB_NAME= le nom de la base de données,
-* Par la suite, renommer le fichier .env-initial en .env en supprimer "-initial".
+* Par la suite, renommer le fichier .env-initial en .env en supprimant "-initial".
 
 #### Il est probable d'adapter Node Js pour que l'application fonctionne
 - Installation avec Brew, dans le terminal :
